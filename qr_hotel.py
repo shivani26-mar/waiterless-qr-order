@@ -16,7 +16,7 @@ import time
 #     tunnel = ngrok.connect(8095, bind_tls=True)
 #     st.session_state.public_url = tunnel.public_url
 
-internet_url = st.session_state.public_url
+internet_url = ""
 
 
 
