@@ -55,27 +55,27 @@ menu_items = {
         "मिक्स वेज (Mix Veg)": {
             "is_plated": True,
             "Half": 100, "Full": 180,
-            "image": "https://unsplash.com", "desc": "ताज़ा मौसमी सब्ज़ियों का स्वादिष्ट मिश्रण।"
+            "image": "mix vage jpg", "desc": "ताज़ा मौसमी सब्ज़ियों का स्वादिष्ट मिश्रण।"
         }
     },
     "चावल के व्यंजन (Rice Dishes)": {
         "वेज पुलाव (Veg Pulao)": {
             "is_plated": True,
             "Half": 90, "Full": 150,
-            "image": "https://unsplash.com", "desc": "बासमती चावल ताज़ा मटर और मसालों के साथ।"
+            "image": "veg pulao jpg", "desc": "बासमती चावल ताज़ा मटर और मसालों के साथ।"
         },
         "जीरा राइस (Jeera Rice)": {
             "is_plated": True,
             "Half": 60, "Full": 100,
-            "image": "https://unsplash.com", "desc": "शुद्ध घी और भूने जीरे से महकते बासमती चावल।"
+            "image": "jeera rice jpg", "desc": "शुद्ध घी और भूने जीरे से महकते बासमती चावल।"
         }
     },
     "रोटी और नान (Breads)": {
         "बटर रोटी (Butter Roti)": {"price": 25, "image": "roti.jpg", "desc": "गेहूं की तंदूरी रोटी, शुद्ध अमूल बटर के साथ।"},
-        "बटर नान (Butter Naan)": {"price": 50, "image": "https://unsplash.com", "desc": "मैदे की मखमली तंदूरी नान मक्खन के साथ।"}
+        "बटर नान (Butter Naan)": {"price": 50, "image": "butter naan jpg", "desc": "मैदे की मखमली तंदूरी नान मक्खन के साथ।"}
     },
     "कुछ मीठा (Desserts)": {
-        "गुलाब जामुन (Gulab Jamun)": {"price": 60, "image": "https://unsplash.com", "desc": "चाशनी में डूबे दो पीस गुलाब जामुन।"}
+        "गुलाब जामुन (Gulab Jamun)": {"price": 60, "image": "gulab jamun jpg", "desc": "चाशनी में डूबे दो पीस गुलाब जामुन।"}
     }
 }
 
