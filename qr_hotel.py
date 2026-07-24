@@ -101,7 +101,11 @@ def auto_refresh_kitchen_dashboard():
 
 # --- 🚀 स्क्रीन A: ग्राहक का मेनू कार्ड और बिलिंग कार्ट ---
 if view_mode == "Customer Menu (ग्राहक)":
-    st.title(f"🍔 डिजिटल रेस्टोरेंट - टेबल नंबर {table_no}")
+    # st.title(f"🍔 डिजिटल रेस्टोरेंट - टेबल नंबर {table_no}")
+    st.title("🍽️ Welcome to Shreeji Restaurant")
+    st.subheader("हमारे रेस्टोरेंट में आपका स्वागत है ❤️")
+    st.title(f"टेबल नंबर {table_no}")
+
     st.subheader("बिना कतार के, सीधे अपने मोबाइल से स्वादिष्ट खाना ऑर्डर करें!")
     st.write("---")
     
@@ -202,7 +206,7 @@ if view_mode == "Customer Menu (ग्राहक)":
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
                 # Supabase cloud database se 'Paid' status wale orders ko delete karna
                 supabase.table("orders").delete().eq("status", "Paid").execute()
-                HOTEL_UPI_ID = "yourname@ybl" 
+                HOTEL_UPI_ID = "9238791716@axl" 
                 upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
                 pay_qr = qrcode.make(upi_url)
                 pay_buf = BytesIO()
