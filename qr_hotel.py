@@ -7,7 +7,7 @@ from io import BytesIO
 import time
 from streamlit import fragment
 
-# Streamlit Secrets se automatic credentials uthane ke liye
+# Streamlit Secrets se automatic credentials uthane ke liye 
 url = "https://supabase.com/dashboard/project/rrrfxgjapvdefyrblkja/settings/api-keys"
 key = "sb_publishable_-eJ3jHavs4HW55E5iODB1g_nbE9J3Hr"
 from supabase import create_client
