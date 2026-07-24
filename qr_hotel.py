@@ -188,17 +188,17 @@ if view_mode == "Customer Menu (ग्राहक)":
                 
              st.write("---")             
             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
-             if st.button("Please Order 👨‍🍳", key="only_order_btn"):
+             if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
                  order_data = {
-                     "table_no": str(selected_table),
+                     "table_no": str(table_no),
                      "items": str(order_summary_text),
                      "total": int(total_bill),
-                     "status": "Ordered"
+                     "status": "ordered"
                  }
-                 supabase.table("orders").insert(order_data).execute()
+                 response = supabase.table("orders").insert(order_data).execute()
                  st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
-             st.write("---")
+                 st.write("---")
 
 
 
@@ -237,7 +237,7 @@ else:
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
     # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
     response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
-
+    st.write(response.data)
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
