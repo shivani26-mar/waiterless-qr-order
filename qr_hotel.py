@@ -8,7 +8,7 @@ import time
 from streamlit import fragment
 
 # Streamlit Secrets se automatic credentials uthane ke liye 
-url = "https://rrrfxgjapvdefyrblkja.supabase.co/rest/v1/"
+url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 key = "sb_publishable_-eJ3jHavs4HW55E5iODB1g_nbE9J3Hr"
 from supabase import create_client
 supabase = create_client(url, key)
