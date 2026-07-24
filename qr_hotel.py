@@ -236,8 +236,8 @@ else:
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
     # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
-    response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
-    st.write(response.data)
+    response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
+    # st.write(response.data)
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
