@@ -287,7 +287,11 @@ else:
         st.info("अभी किचन में कोई पेंडिंग ऑर्डर नहीं है। शेफ आराम कर रहे हैं! 🍹")
     else:
         for order in active_orders:
-            order_id, t_no, food_items, bill_amount = order
+            order_id = order['id']
+            t_no = order['table_no']
+            food_items = order['items']
+            bill_amount = order['total']
+            # order_id, t_no, food_items, bill_amount = order
             
             with st.expander(f"⚠️ टेबल नंबर {t_no} से नया ऑर्डर! (ID: {order_id})", expanded=True):
                 st.write(f"🍛 **ऑर्डर किया गया खाना:** {food_items}")
