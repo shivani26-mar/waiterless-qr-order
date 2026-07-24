@@ -218,7 +218,7 @@ else:
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
     # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
-   response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
+    response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
 
     active_orders = response.data if response.data else []
     
