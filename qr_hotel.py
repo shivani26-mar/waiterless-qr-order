@@ -188,17 +188,17 @@ if view_mode == "Customer Menu (ग्राहक)":
                 
              st.write("---")             
             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
-              if st.button("Please Order 👨‍🍳", key="only_order_btn"):
-                  order_data = {
-                      "table_no": str(selected_table),
-                      "items": str(order_summary_text),
-                      "total": int(total_bill),
-                      "status": "Ordered"
-                  }
-                  supabase.table("orders").insert(order_data).execute()
-                  st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
+            if st.button("Please Order 👨‍🍳", key="only_order_btn"):
+                 order_data = {
+                     "table_no": str(selected_table),
+                     "items": str(order_summary_text),
+                     "total": int(total_bill),
+                     "status": "Ordered"
+                 }
+                 supabase.table("orders").insert(order_data).execute()
+                 st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
-               st.write("---")
+            st.write("---")
 
 
 
