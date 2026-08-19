@@ -313,7 +313,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                 
              st.write("---")             
              
-            # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
+             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
              if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
                 order_data = {
                     "table_no": str(table_no),
@@ -321,14 +321,40 @@ if view_mode == "Customer Menu (ग्राहक)":
                     "total": int(total_bill),
                     "status": "ordered"
                 }
-            
-                response = supabase.table("orders").insert(order_data).execute()
-            
-                st.success(
-                    f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
-                )
-            
+
+                try:
+                    response = supabase.table("orders").insert(order_data).execute()
+                    st.success(
+                        f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
+                    )
+                except Exception as e:
+                    st.error("❌ Order database में save नहीं हुआ")
+                    st.error(str(e))
+
                 st.write("---")
+            
+            
+            
+            
+            
+            
+            
+            # # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
+            #  if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
+            #     order_data = {
+            #         "table_no": str(table_no),
+            #         "items": str(order_summary_text),
+            #         "total": int(total_bill),
+            #         "status": "ordered"
+            #     }
+            
+            #     response = supabase.table("orders").insert(order_data).execute()
+            
+            #     st.success(
+            #         f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
+            #     )
+            
+            #     st.write("---")
                 
     
 
