@@ -1,6 +1,5 @@
 
 import streamlit as st
-
 # 🔐 Manager Authentication
 def manager_login():
     if st.session_state.get("manager_authenticated", False):
@@ -8,20 +7,33 @@ def manager_login():
 
     st.subheader("🔐 Manager Login")
 
+    email = st.text_input("Manager Email")
     password = st.text_input(
         "Manager Password",
         type="password"
     )
 
     if st.button("Login"):
-        if password == st.secrets["MANAGER_PASSWORD"]:
-            st.session_state.manager_authenticated = True
-            st.success("Login successful!")
-            st.rerun()
-        else:
-            st.error("Incorrect password")
+        try:
+            response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
+
+            if response.user:
+                st.session_state.manager_authenticated = True
+                st.success("Login successful!")
+                st.rerun()
+            else:
+                st.error("Login failed")
+
+        except Exception:
+            st.error("Incorrect email or password")
 
     return False
+
+
+           
 
 # from pyngrok import ngrok
 import qrcode
