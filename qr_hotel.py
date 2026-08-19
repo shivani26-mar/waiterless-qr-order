@@ -53,72 +53,7 @@ def manager_login():
 
     return False
 
-
-
-
-
-
-
-
-# # 🔐 Manager Authentication
-# def manager_login():
-
-#     # 🔄 Restore Supabase session after Streamlit rerun
-#     if "manager_session" in st.session_state:
-#         session = st.session_state.manager_session
-
-#         try:
-#             supabase.auth.set_session(
-#                 session.access_token,
-#                 session.refresh_token
-#             )
-#             return True
-#         except Exception:
-#             st.session_state.pop("manager_session", None)
-#             st.session_state.pop("manager_authenticated", None)
-
-#     st.subheader("🔐 Manager Login")
-
-#     email = st.text_input("Manager Email")
-#     password = st.text_input(
-#         "Manager Password",
-#         type="password"
-#     )
-
-#     if st.button("Login"):
-#         try:
-#             response = supabase.auth.sign_in_with_password({
-#                 "email": email,
-#                 "password": password
-#             })
-
-#             if response.user and response.session:
-
-#                 # Save authentication state
-#                 st.session_state.manager_authenticated = True
-#                 st.session_state.manager_user_id = response.user.id
-#                 st.session_state.manager_session = response.session
-
-#                 # Set Supabase authenticated session
-#                 supabase.auth.set_session(
-#                     response.session.access_token,
-#                     response.session.refresh_token
-#                 )
-
-#                 st.success("Login successful!")
-#                 st.rerun()
-
-#             else:
-#                 st.error("Login failed")
-
-#         except Exception:
-#             st.error("Incorrect email or password")
-
-#     return False
-      
-            
-           
-
+        
 # from pyngrok import ngrok
 import qrcode
 import sqlite3
@@ -131,11 +66,22 @@ url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 # Move Supabase key to Streamlit Secrets
 key = st.secrets["SUPABASE_KEY"]
 from supabase import create_client
+from supabase.client import ClientOptions
 
-# 👤 Customer के लिए anonymous/public client
-supabase = create_client(url, key)
+# 👤 Customer के लिए PUBLIC client
+# Customer कभी login नहीं करेगा
+customer_options = ClientOptions(
+    auto_refresh_token=False,
+    persist_session=False
+)
 
-# 👨‍💼 Manager के लिए अलग authenticated client
+supabase = create_client(
+    url,
+    key,
+    options=customer_options
+)
+
+# 👨‍💼 Manager के लिए अलग client
 manager_supabase = create_client(url, key)
 internet_url = "https://smart-waiterless-qr-hotel.streamlit.app/" 
 
@@ -325,81 +271,13 @@ if view_mode == "Customer Menu (ग्राहक)":
                 try:
                     response = supabase.table("orders").insert(order_data).execute()
                     st.success(
-                        f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
+                        f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।"
                     )
                 except Exception as e:
                     st.error("❌ Order database में save नहीं हुआ")
                     st.error(str(e))
 
                 st.write("---")
-            
-            
-            
-            
-            
-            
-            
-            # # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
-            #  if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-            #     order_data = {
-            #         "table_no": str(table_no),
-            #         "items": str(order_summary_text),
-            #         "total": int(total_bill),
-            #         "status": "ordered"
-            #     }
-            
-            #     response = supabase.table("orders").insert(order_data).execute()
-            
-            #     st.success(
-            #         f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
-            #     )
-            
-            #     st.write("---")
-                
-    
-
-
-
-
-
-
-
-
-
-
-            
-             # if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-             #     order_data = {
-             #         "table_no": str(table_no),
-             #         "items": str(order_summary_text),
-             #         "total": int(total_bill),
-             #         "status": "ordered"
-             #     }
-             #     try:
-             #        response = supabase.table("orders").insert(order_data).execute()
-             #        st.write(response)
-                
-             #        st.success("🎉 ऑर्डर किचन में भेज दिया गया है!")
-                
-             #    except Exception as e:
-             #        st.error("❌ Order insert failed")
-             #        st.write(str(e))
-                
-
-
-
-
-
-
-
-
-
-                 
-                 # response = supabase.table("orders").insert(order_data).execute()
-                 # st.write(response)
-                 # st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
-    
-                 # st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
