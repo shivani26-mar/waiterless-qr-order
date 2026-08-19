@@ -254,7 +254,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                      "total": int(total_bill),
                      "status": "ordered"
                  }
-               try:
+                 try:
                     response = supabase.table("orders").insert(order_data).execute()
                     st.write(response)
                 
@@ -278,7 +278,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                  # st.write(response)
                  # st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
-                 # st.write("---")
+                 st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
