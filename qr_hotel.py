@@ -70,7 +70,12 @@ url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 # Move Supabase key to Streamlit Secrets
 key = st.secrets["SUPABASE_KEY"]
 from supabase import create_client
+
+# 👤 Customer के लिए anonymous/public client
 supabase = create_client(url, key)
+
+# 👨‍💼 Manager के लिए अलग authenticated client
+manager_supabase = create_client(url, key)
 internet_url = "https://smart-waiterless-qr-hotel.streamlit.app/" 
 
 # 1. ⚙️ डेटाबेस (तिजोरी) सेटअप
