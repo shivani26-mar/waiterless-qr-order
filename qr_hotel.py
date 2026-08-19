@@ -7,7 +7,7 @@ def manager_login():
         session = st.session_state.manager_session
 
         try:
-            supabase.auth.set_session(
+            manager_supabase.auth.set_session(
                 session.access_token,
                 session.refresh_token
             )
@@ -26,20 +26,18 @@ def manager_login():
 
     if st.button("Login"):
         try:
-            response = supabase.auth.sign_in_with_password({
+            response = manager_supabase.auth.sign_in_with_password({
                 "email": email,
                 "password": password
             })
 
             if response.user and response.session:
 
-                # Save authentication state
                 st.session_state.manager_authenticated = True
                 st.session_state.manager_user_id = response.user.id
                 st.session_state.manager_session = response.session
 
-                # Set Supabase authenticated session
-                supabase.auth.set_session(
+                manager_supabase.auth.set_session(
                     response.session.access_token,
                     response.session.refresh_token
                 )
@@ -54,6 +52,69 @@ def manager_login():
             st.error("Incorrect email or password")
 
     return False
+
+
+
+
+
+
+
+
+# # 🔐 Manager Authentication
+# def manager_login():
+
+#     # 🔄 Restore Supabase session after Streamlit rerun
+#     if "manager_session" in st.session_state:
+#         session = st.session_state.manager_session
+
+#         try:
+#             supabase.auth.set_session(
+#                 session.access_token,
+#                 session.refresh_token
+#             )
+#             return True
+#         except Exception:
+#             st.session_state.pop("manager_session", None)
+#             st.session_state.pop("manager_authenticated", None)
+
+#     st.subheader("🔐 Manager Login")
+
+#     email = st.text_input("Manager Email")
+#     password = st.text_input(
+#         "Manager Password",
+#         type="password"
+#     )
+
+#     if st.button("Login"):
+#         try:
+#             response = supabase.auth.sign_in_with_password({
+#                 "email": email,
+#                 "password": password
+#             })
+
+#             if response.user and response.session:
+
+#                 # Save authentication state
+#                 st.session_state.manager_authenticated = True
+#                 st.session_state.manager_user_id = response.user.id
+#                 st.session_state.manager_session = response.session
+
+#                 # Set Supabase authenticated session
+#                 supabase.auth.set_session(
+#                     response.session.access_token,
+#                     response.session.refresh_token
+#                 )
+
+#                 st.success("Login successful!")
+#                 st.rerun()
+
+#             else:
+#                 st.error("Login failed")
+
+#         except Exception:
+#             st.error("Incorrect email or password")
+
+#     return False
       
             
            
@@ -335,13 +396,15 @@ else:
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
-   
-    response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
+    response = manager_supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
+    # response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
     # st.write(response.data)
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
-    total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
+    
+    total_response = manager_supabase.table("orders").select("total").eq("status", "Paid").execute()
+    # total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
     grand_total = sum(row['total'] for row in total_response.data) if total_response.data else 0
     # --- 💰 मैनेजर के लिए लाइव गल्ला काउंटर ---
     st.write("---")
