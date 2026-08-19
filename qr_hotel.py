@@ -246,23 +246,55 @@ if view_mode == "Customer Menu (ग्राहक)":
                 st.rerun()
                 
              st.write("---")             
+             
             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
-             if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-                 order_data = {
-                     "table_no": str(table_no),
-                     "items": str(order_summary_text),
-                     "total": int(total_bill),
-                     "status": "ordered"
-                 }
-                 try:
-                    response = supabase.table("orders").insert(order_data).execute()
-                    st.write(response)
+              if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
+                  order_data = {
+                      "table_no": str(table_no),
+                      "items": str(order_summary_text),
+                      "total": int(total_bill),
+                      "status": "ordered"
+                  }
+        
+                  try:
+                      response = supabase.table("orders").insert(order_data).execute()
+                      st.write(response)
+                      st.success("🎉 ऑर्डर किचन में भेज दिया गया है!")
+        
+                  except Exception as e:
+                      st.error("❌ Order insert failed")
+                      st.write(str(e))
+        
+                  st.write("---")
+        
+    
+
+
+
+
+
+
+
+
+
+
+            
+             # if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
+             #     order_data = {
+             #         "table_no": str(table_no),
+             #         "items": str(order_summary_text),
+             #         "total": int(total_bill),
+             #         "status": "ordered"
+             #     }
+             #     try:
+             #        response = supabase.table("orders").insert(order_data).execute()
+             #        st.write(response)
                 
-                    st.success("🎉 ऑर्डर किचन में भेज दिया गया है!")
+             #        st.success("🎉 ऑर्डर किचन में भेज दिया गया है!")
                 
-                except Exception as e:
-                    st.error("❌ Order insert failed")
-                    st.write(str(e))
+             #    except Exception as e:
+             #        st.error("❌ Order insert failed")
+             #        st.write(str(e))
                 
 
 
@@ -278,7 +310,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                  # st.write(response)
                  # st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
-                 st.write("---")
+                 # st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
