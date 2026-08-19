@@ -1,5 +1,28 @@
 
 import streamlit as st
+
+# 🔐 Manager Authentication
+def manager_login():
+    if st.session_state.get("manager_authenticated", False):
+        return True
+
+    st.subheader("🔐 Manager Login")
+
+    password = st.text_input(
+        "Manager Password",
+        type="password"
+    )
+
+    if st.button("Login"):
+        if password == st.secrets["MANAGER_PASSWORD"]:
+            st.session_state.manager_authenticated = True
+            st.success("Login successful!")
+            st.rerun()
+        else:
+            st.error("Incorrect password")
+
+    return False
+
 # from pyngrok import ngrok
 import qrcode
 import sqlite3
@@ -200,22 +223,6 @@ if view_mode == "Customer Menu (ग्राहक)":
                  st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
                  st.write("---")
-
-
-
-
-# if st.button("Please Order 🍽️", key="only_order_btn"):
-                
-             #            order_data = {
-             #                "table_no": str(selected_table), 
-             #                "items": str(order_summary_text), 
-             #                "total": int(total_bill), 
-             #                "status": "Ordered",
-             #            }
-             #            supabase.table("orders").insert(order_data).execute()
-             #            st.success(f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं|")
-                
-             # st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
@@ -232,6 +239,8 @@ if view_mode == "Customer Menu (ग्राहक)":
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
+    if not manager_login():
+        st.stop()
     auto_refresh_kitchen_dashboard()
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
