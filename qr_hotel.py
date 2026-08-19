@@ -1,4 +1,3 @@
-
 import streamlit as st
 # 🔐 Manager Authentication
 def manager_login():
@@ -20,18 +19,26 @@ def manager_login():
                 "password": password
             })
 
-            if response.user:
+            if response.user and response.session:
+                # 🔐 Supabase Auth session save
                 st.session_state.manager_authenticated = True
+                st.session_state.manager_user_id = response.user.id
+                st.session_state.manager_session = response.session
+
+                supabase.auth.set_session(
+                    response.session.access_token,
+                    response.session.refresh_token
+                )
+
                 st.success("Login successful!")
                 st.rerun()
             else:
                 st.error("Login failed")
 
-        except Exception:
+        except Exception as e:
             st.error("Incorrect email or password")
 
     return False
-
 
            
 
@@ -257,7 +264,7 @@ else:
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
-    # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
+   
     response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
     # st.write(response.data)
     active_orders = response.data if response.data else []
