@@ -1,22 +1,11 @@
 
 import streamlit as st
 
-# 🔐 Manager Authentication
+# 🔐 Manager Login
 def manager_login():
 
-    # 🔄 Restore Supabase session after Streamlit rerun
-    if "manager_session" in st.session_state:
-        session = st.session_state.manager_session
-
-        try:
-            supabase.auth.set_session(
-                session.access_token,
-                session.refresh_token
-            )
-            return True
-        except Exception:
-            st.session_state.pop("manager_session", None)
-            st.session_state.pop("manager_authenticated", None)
+    if st.session_state.get("manager_authenticated", False):
+        return True
 
     st.subheader("🔐 Manager Login")
 
@@ -27,39 +16,20 @@ def manager_login():
     )
 
     if st.button("Login"):
-        try:
-            response = supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
 
-            if response.user and response.session:
+        correct_email = st.secrets["MANAGER_EMAIL"]
+        correct_password = st.secrets["MANAGER_PASSWORD"]
 
-                # Save authentication state
-                st.session_state.manager_authenticated = True
-                st.session_state.manager_user_id = response.user.id
-                st.session_state.manager_session = response.session
+        if email == correct_email and password == correct_password:
 
-                # Set Supabase authenticated session
-                supabase.auth.set_session(
-                    response.session.access_token,
-                    response.session.refresh_token
-                )
+            st.session_state.manager_authenticated = True
+            st.success("✅ Login successful!")
+            st.rerun()
 
-                st.success("Login successful!")
-                st.rerun()
-
-            else:
-                st.error("Login failed")
-
-        except Exception:
-            st.error("Incorrect email or password")
+        else:
+            st.error("❌ Incorrect email or password")
 
     return False
-      
-            
-                   
-        
 
 
 
@@ -295,6 +265,9 @@ if view_mode == "Customer Menu (ग्राहक)":
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
+    # 🔐 Manager Login Required
+    if not manager_login():
+        st.stop()
     auto_refresh_kitchen_dashboard()
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
