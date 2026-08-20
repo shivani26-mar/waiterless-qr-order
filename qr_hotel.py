@@ -1,59 +1,5 @@
+
 import streamlit as st
-# 🔐 Manager Authentication
-def manager_login():
-
-    # 🔄 Restore Supabase session after Streamlit rerun
-    if "manager_session" in st.session_state:
-        session = st.session_state.manager_session
-
-        try:
-            manager_supabase.auth.set_session(
-                session.access_token,
-                session.refresh_token
-            )
-            return True
-        except Exception:
-            st.session_state.pop("manager_session", None)
-            st.session_state.pop("manager_authenticated", None)
-
-    st.subheader("🔐 Manager Login")
-
-    email = st.text_input("Manager Email")
-    password = st.text_input(
-        "Manager Password",
-        type="password"
-    )
-
-    if st.button("Login"):
-        try:
-            response = manager_supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
-
-            if response.user and response.session:
-
-                st.session_state.manager_authenticated = True
-                st.session_state.manager_user_id = response.user.id
-                st.session_state.manager_session = response.session
-
-                manager_supabase.auth.set_session(
-                    response.session.access_token,
-                    response.session.refresh_token
-                )
-
-                st.success("Login successful!")
-                st.rerun()
-
-            else:
-                st.error("Login failed")
-
-        except Exception:
-            st.error("Incorrect email or password")
-
-    return False
-
-        
 # from pyngrok import ngrok
 import qrcode
 import sqlite3
@@ -66,23 +12,7 @@ url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 # Move Supabase key to Streamlit Secrets
 key = st.secrets["SUPABASE_KEY"]
 from supabase import create_client
-from supabase.client import ClientOptions
-
-# 👤 Customer के लिए PUBLIC client
-# Customer कभी login नहीं करेगा
-customer_options = ClientOptions(
-    auto_refresh_token=False,
-    persist_session=False
-)
-
-supabase = create_client(
-    url,
-    key,
-    options=customer_options
-)
-
-# 👨‍💼 Manager के लिए अलग client
-manager_supabase = create_client(url, key)
+supabase = create_client(url, key)
 internet_url = "https://smart-waiterless-qr-hotel.streamlit.app/" 
 
 # 1. ⚙️ डेटाबेस (तिजोरी) सेटअप
@@ -258,27 +188,34 @@ if view_mode == "Customer Menu (ग्राहक)":
                 st.rerun()
                 
              st.write("---")             
-             
-             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
+            # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
              if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-                order_data = {
-                    "table_no": str(table_no),
-                    "items": str(order_summary_text),
-                    "total": int(total_bill),
-                    "status": "ordered"
-                }
+                 order_data = {
+                     "table_no": str(table_no),
+                     "items": str(order_summary_text),
+                     "total": int(total_bill),
+                     "status": "ordered"
+                 }
+                 response = supabase.table("orders").insert(order_data).execute()
+                 st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
+    
+                 st.write("---")
 
-                try:
-                    st.write("DEBUG:", supabase.rpc("debug_auth_role").execute().data)
-                    response = supabase.table("orders").insert(order_data).execute()
-                    st.success(
-                        f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।"
-                    )
-                except Exception as e:
-                    st.error("❌ Order database में save नहीं हुआ")
-                    st.error(str(e))
 
-                st.write("---")
+
+
+# if st.button("Please Order 🍽️", key="only_order_btn"):
+                
+             #            order_data = {
+             #                "table_no": str(selected_table), 
+             #                "items": str(order_summary_text), 
+             #                "total": int(total_bill), 
+             #                "status": "Ordered",
+             #            }
+             #            supabase.table("orders").insert(order_data).execute()
+             #            st.success(f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं|")
+                
+             # st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
@@ -295,21 +232,17 @@ if view_mode == "Customer Menu (ग्राहक)":
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
-    if not manager_login():
-        st.stop()
     auto_refresh_kitchen_dashboard()
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
-    response = manager_supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
-    # response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
+    # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
+    response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
     # st.write(response.data)
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
-    
-    total_response = manager_supabase.table("orders").select("total").eq("status", "Paid").execute()
-    # total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
+    total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
     grand_total = sum(row['total'] for row in total_response.data) if total_response.data else 0
     # --- 💰 मैनेजर के लिए लाइव गल्ला काउंटर ---
     st.write("---")
@@ -365,7 +298,6 @@ else:
                 st.write(f"🍛 **ऑर्डर किया गया खाना:** {food_items}")
                 st.subheader(f"💰 संभावित बिल (Unpaid): ₹{bill_amount}")
                 st.caption("नोट: यह राशि पेमेंट होने के बाद ही मुख्य टोटल गल्ले में जुड़ेगी।")
-
 
 
 
