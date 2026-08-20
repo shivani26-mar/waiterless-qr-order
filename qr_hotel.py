@@ -233,22 +233,6 @@ if view_mode == "Customer Menu (ग्राहक)":
                  st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
                  st.write("---")
-
-
-
-
-# if st.button("Please Order 🍽️", key="only_order_btn"):
-                
-             #            order_data = {
-             #                "table_no": str(selected_table), 
-             #                "items": str(order_summary_text), 
-             #                "total": int(total_bill), 
-             #                "status": "Ordered",
-             #            }
-             #            supabase.table("orders").insert(order_data).execute()
-             #            st.success(f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं|")
-                
-             # st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
@@ -272,7 +256,7 @@ else:
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
-    # response = supabase.table("orders").select("*").eq("status", "Ordered").order("id", desc=True).execute()
+   
     response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
     # st.write(response.data)
     active_orders = response.data if response.data else []
@@ -318,6 +302,59 @@ else:
         st.rerun()
                 
     st.write("---")
+
+        # 🗑️ PRACTICAL / TEST ORDERS CLEAR BUTTON
+    st.write("---")
+
+    if st.button(
+        "🗑️ Clear All Kitchen Orders",
+        type="secondary",
+        use_container_width=True
+    ):
+        st.session_state.confirm_order_delete = True
+
+    # ⚠️ Delete Confirmation
+    if st.session_state.get("confirm_order_delete", False):
+
+        st.warning(
+            "⚠️ क्या आप सभी current Kitchen Orders delete करना चाहते हैं?"
+        )
+
+        col_delete, col_cancel = st.columns(2)
+
+        with col_delete:
+            if st.button(
+                "हाँ, सभी Orders Delete करें 🗑️",
+                key="delete_all_kitchen_orders",
+                type="primary"
+            ):
+
+                supabase.table("orders").delete().eq(
+                    "status", "ordered"
+                ).execute()
+
+                st.session_state.confirm_order_delete = False
+
+                st.success(
+                    "✅ सभी practical Kitchen Orders delete हो गए!"
+                )
+
+                time.sleep(1)
+                st.rerun()
+
+        with col_cancel:
+            if st.button(
+                "❌ Cancel",
+                key="cancel_delete_orders"
+            ):
+
+                st.session_state.confirm_order_delete = False
+                st.rerun() 
+
+
+
+
+
     
     # एक्टिव ऑर्डर्स को दिखाना
     if not active_orders:
