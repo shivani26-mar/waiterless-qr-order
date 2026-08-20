@@ -269,6 +269,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                 }
 
                 try:
+                    st.write("DEBUG:", supabase.rpc("debug_auth_role").execute().data)
                     response = supabase.table("orders").insert(order_data).execute()
                     st.success(
                         f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।"
