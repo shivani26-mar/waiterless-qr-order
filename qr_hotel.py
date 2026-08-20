@@ -1,9 +1,22 @@
 
 import streamlit as st
+
 # 🔐 Manager Authentication
 def manager_login():
-    if st.session_state.get("manager_authenticated", False):
-        return True
+
+    # 🔄 Restore Supabase session after Streamlit rerun
+    if "manager_session" in st.session_state:
+        session = st.session_state.manager_session
+
+        try:
+            supabase.auth.set_session(
+                session.access_token,
+                session.refresh_token
+            )
+            return True
+        except Exception:
+            st.session_state.pop("manager_session", None)
+            st.session_state.pop("manager_authenticated", None)
 
     st.subheader("🔐 Manager Login")
 
@@ -20,10 +33,22 @@ def manager_login():
                 "password": password
             })
 
-            if response.user:
+            if response.user and response.session:
+
+                # Save authentication state
                 st.session_state.manager_authenticated = True
+                st.session_state.manager_user_id = response.user.id
+                st.session_state.manager_session = response.session
+
+                # Set Supabase authenticated session
+                supabase.auth.set_session(
+                    response.session.access_token,
+                    response.session.refresh_token
+                )
+
                 st.success("Login successful!")
                 st.rerun()
+
             else:
                 st.error("Login failed")
 
@@ -31,7 +56,10 @@ def manager_login():
             st.error("Incorrect email or password")
 
     return False
-
+      
+            
+                   
+        
 
 
 
