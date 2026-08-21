@@ -296,8 +296,10 @@ if view_mode == "Customer Menu (ग्राहक)":
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
 
-             if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+            # 📌 बटन 2: Final Bill Payment
 
+             if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+                
                     order_id = st.session_state.get("current_order_id")
                 
                     if not order_id:
@@ -313,23 +315,13 @@ if view_mode == "Customer Menu (ग्राहक)":
                             f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
                         )
                 
-                        st.write("### 💳 Payment")
-                
                         payment_data = {
                             "key": RAZORPAY_KEY_ID,
                             "amount": amount * 100,
                             "currency": "INR",
                             "name": "Digital Hotel",
                             "description": f"Table {table_no} Final Bill",
-                            "order_id": razorpay_order["id"],
-                            "prefill": {
-                                "name": "",
-                                "contact": "",
-                                "email": ""
-                            },
-                            "theme": {
-                                "color": "#3399cc"
-                            }
+                            "order_id": razorpay_order["id"]
                         }
                 
                         st.components.v1.html(
@@ -347,34 +339,45 @@ if view_mode == "Customer Menu (ग्राहक)":
                             </button>
                 
                             <script>
-                            var options = {payment_data};
+                                var options = {payment_data};
                 
-                            options.handler = function (response) {{
-                                document.getElementById("payment-result").innerHTML =
-                                    "✅ Payment Successful";
-                            }};
-                
-                            var rzp = new Razorpay(options);
-                
-                            document.getElementById("rzp-button").onclick =
-                                function(e) {{
-                                    rzp.open();
-                                    e.preventDefault();
+                                options.handler = function(response) {{
+                                    document.getElementById("payment-result").innerHTML =
+                                        "✅ Payment Successful";
                                 }};
+                
+                                var rzp = new Razorpay(options);
+                
+                                document.getElementById("rzp-button").onclick =
+                                    function(e) {{
+                                        rzp.open();
+                                        e.preventDefault();
+                                    }};
                             </script>
                 
                             <div id="payment-result"
                                  style="margin-top:15px;font-size:18px;">
                             </div>
                             """,
-                                        height=180
-                    )
-            
-                except Exception as e:
-                    st.error(f"❌ Razorpay Error: {e}")
-            
-
-
+                            height=180
+                        )
+                
+                    except Exception as e:
+                        st.error(f"❌ Razorpay Error: {e}")
+                            
+                        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+       
 
 
 
