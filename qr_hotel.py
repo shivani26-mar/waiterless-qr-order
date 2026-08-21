@@ -1,5 +1,4 @@
 
-import streamlit as st
 
 # 🔐 Manager Login
 def manager_login():
@@ -32,6 +31,8 @@ def manager_login():
     return False
 
 
+import streamlit.components.v1 as components
+import streamlit as st
 import razorpay
 
 RAZORPAY_KEY_ID = st.secrets["RAZORPAY_KEY_ID"]
@@ -40,6 +41,46 @@ RAZORPAY_KEY_SECRET = st.secrets["RAZORPAY_KEY_SECRET"]
 razorpay_client = razorpay.Client(
     auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
 )
+
+def create_razorpay_order(amount):
+    amount_paise = int(amount * 100)
+
+    razorpay_order = razorpay_client.order.create({
+        "amount": amount_paise,
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    return razorpay_order
+
+def add_daily_sale(amount):
+    from datetime import date
+
+    today = date.today().isoformat()
+
+    existing = (
+        supabase
+        .table("daily_sales")
+        .select("id,total_amount")
+        .eq("sale_date", today)
+        .execute()
+    )
+
+    if existing.data:
+        sale_id = existing.data[0]["id"]
+        old_total = float(existing.data[0]["total_amount"])
+        new_total = old_total + float(amount)
+
+        supabase.table("daily_sales").update({
+            "total_amount": new_total
+        }).eq("id", sale_id).execute()
+
+    else:
+        supabase.table("daily_sales").insert({
+            "sale_date": today,
+            "total_amount": float(amount)
+        }).execute()
+
 
 
 
@@ -254,17 +295,102 @@ if view_mode == "Customer Menu (ग्राहक)":
                  st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
-             if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
-                # Supabase cloud database se 'Paid' status wale orders ko delete karna
-                supabase.table("orders").delete().eq("status", "Paid").execute()
-                HOTEL_UPI_ID = "9238791716@axl" 
-                upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
-                pay_qr = qrcode.make(upi_url)
-                pay_buf = BytesIO()
-                pay_qr.save(pay_buf, format="PNG")
-                st.info(f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{total_bill} है।")
-                st.image(pay_buf.getvalue(), caption="फाइनल पेमेंट क्यूआर कोड", width=250)
-                st.session_state.cart = {}
+
+              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn")
+
+                    order_id = st.session_state.get("current_order_id")
+                
+                    if not order_id:
+                        st.error("❌ पहले Order Place करें, फिर Payment करें।")
+                        st.stop()
+                
+                    amount = int(total_bill)
+                
+                    try:
+                        razorpay_order = create_razorpay_order(amount)
+                
+                        st.info(
+                            f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
+                        )
+                
+                        st.write("### 💳 Payment")
+                
+                        payment_data = {
+                            "key": RAZORPAY_KEY_ID,
+                            "amount": amount * 100,
+                            "currency": "INR",
+                            "name": "Digital Hotel",
+                            "description": f"Table {table_no} Final Bill",
+                            "order_id": razorpay_order["id"],
+                            "prefill": {
+                                "name": "",
+                                "contact": "",
+                                "email": ""
+                            },
+                            "theme": {
+                                "color": "#3399cc"
+                            }
+                        }
+                
+                        st.components.v1.html(
+                            f"""
+                            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                
+                            <button id="rzp-button"
+                                    style="
+                                    padding:12px 25px;
+                                    font-size:16px;
+                                    border:none;
+                                    border-radius:8px;
+                                    cursor:pointer;">
+                                💳 Pay ₹{amount}
+                            </button>
+                
+                            <script>
+                            var options = {payment_data};
+                
+                            options.handler = function (response) {{
+                                document.getElementById("payment-result").innerHTML =
+                                    "✅ Payment Successful";
+                            }};
+                
+                            var rzp = new Razorpay(options);
+                
+                            document.getElementById("rzp-button").onclick =
+                                function(e) {{
+                                    rzp.open();
+                                    e.preventDefault();
+                                }};
+                            </script>
+                
+                            <div id="payment-result"
+                                 style="margin-top:15px;font-size:18px;">
+                            </div>
+                            """,
+                            height=180
+        )
+
+    except Exception as e:
+        st.error(f"❌ Razorpay Error: {e}")
+
+
+
+
+
+
+
+            
+             # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+             #    # Supabase cloud database se 'Paid' status wale orders ko delete karna
+             #    supabase.table("orders").delete().eq("status", "Paid").execute()
+             #    HOTEL_UPI_ID = "9238791716@axl" 
+             #    upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
+             #    pay_qr = qrcode.make(upi_url)
+             #    pay_buf = BytesIO()
+             #    pay_qr.save(pay_buf, format="PNG")
+             #    st.info(f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{total_bill} है।")
+             #    st.image(pay_buf.getvalue(), caption="फाइनल पेमेंट क्यूआर कोड", width=250)
+             #    st.session_state.cart = {}
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
