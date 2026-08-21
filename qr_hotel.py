@@ -1,20 +1,10 @@
-import streamlit as st
-# 🔐 Manager Authentication
+
+
+# 🔐 Manager Login
 def manager_login():
 
-    # 🔄 Restore Supabase session after Streamlit rerun
-    if "manager_session" in st.session_state:
-        session = st.session_state.manager_session
-
-        try:
-            manager_supabase.auth.set_session(
-                session.access_token,
-                session.refresh_token
-            )
-            return True
-        except Exception:
-            st.session_state.pop("manager_session", None)
-            st.session_state.pop("manager_authenticated", None)
+    if st.session_state.get("manager_authenticated", False):
+        return True
 
     st.subheader("🔐 Manager Login")
 
@@ -25,99 +15,78 @@ def manager_login():
     )
 
     if st.button("Login"):
-        try:
-            response = manager_supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
 
-            if response.user and response.session:
+        correct_email = st.secrets["MANAGER_EMAIL"]
+        correct_password = st.secrets["MANAGER_PASSWORD"]
 
-                st.session_state.manager_authenticated = True
-                st.session_state.manager_user_id = response.user.id
-                st.session_state.manager_session = response.session
+        if email == correct_email and password == correct_password:
 
-                manager_supabase.auth.set_session(
-                    response.session.access_token,
-                    response.session.refresh_token
-                )
+            st.session_state.manager_authenticated = True
+            st.success("✅ Login successful!")
+            st.rerun()
 
-                st.success("Login successful!")
-                st.rerun()
-
-            else:
-                st.error("Login failed")
-
-        except Exception:
-            st.error("Incorrect email or password")
+        else:
+            st.error("❌ Incorrect email or password")
 
     return False
 
 
+import streamlit.components.v1 as components
+import streamlit as st
+import razorpay
+
+RAZORPAY_KEY_ID = st.secrets["RAZORPAY_KEY_ID"]
+RAZORPAY_KEY_SECRET = st.secrets["RAZORPAY_KEY_SECRET"]
+
+razorpay_client = razorpay.Client(
+    auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
+)
+
+def create_razorpay_order(amount):
+    amount_paise = int(amount * 100)
+
+    razorpay_order = razorpay_client.order.create({
+        "amount": amount_paise,
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    return razorpay_order
+
+def add_daily_sale(amount):
+    from datetime import date
+
+    today = date.today().isoformat()
+
+    existing = (
+        supabase
+        .table("daily_sales")
+        .select("id,total_amount")
+        .eq("sale_date", today)
+        .execute()
+    )
+
+    if existing.data:
+        sale_id = existing.data[0]["id"]
+        old_total = float(existing.data[0]["total_amount"])
+        new_total = old_total + float(amount)
+
+        supabase.table("daily_sales").update({
+            "total_amount": new_total
+        }).eq("id", sale_id).execute()
+
+    else:
+        supabase.table("daily_sales").insert({
+            "sale_date": today,
+            "total_amount": float(amount)
+        }).execute()
 
 
 
 
 
 
-# # 🔐 Manager Authentication
-# def manager_login():
 
-#     # 🔄 Restore Supabase session after Streamlit rerun
-#     if "manager_session" in st.session_state:
-#         session = st.session_state.manager_session
-
-#         try:
-#             supabase.auth.set_session(
-#                 session.access_token,
-#                 session.refresh_token
-#             )
-#             return True
-#         except Exception:
-#             st.session_state.pop("manager_session", None)
-#             st.session_state.pop("manager_authenticated", None)
-
-#     st.subheader("🔐 Manager Login")
-
-#     email = st.text_input("Manager Email")
-#     password = st.text_input(
-#         "Manager Password",
-#         type="password"
-#     )
-
-#     if st.button("Login"):
-#         try:
-#             response = supabase.auth.sign_in_with_password({
-#                 "email": email,
-#                 "password": password
-#             })
-
-#             if response.user and response.session:
-
-#                 # Save authentication state
-#                 st.session_state.manager_authenticated = True
-#                 st.session_state.manager_user_id = response.user.id
-#                 st.session_state.manager_session = response.session
-
-#                 # Set Supabase authenticated session
-#                 supabase.auth.set_session(
-#                     response.session.access_token,
-#                     response.session.refresh_token
-#                 )
-
-#                 st.success("Login successful!")
-#                 st.rerun()
-
-#             else:
-#                 st.error("Login failed")
-
-#         except Exception:
-#             st.error("Incorrect email or password")
-
-#     return False
-      
-            
-           
 
 # from pyngrok import ngrok
 import qrcode
@@ -131,12 +100,7 @@ url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 # Move Supabase key to Streamlit Secrets
 key = st.secrets["SUPABASE_KEY"]
 from supabase import create_client
-
-# 👤 Customer के लिए anonymous/public client
 supabase = create_client(url, key)
-
-# 👨‍💼 Manager के लिए अलग authenticated client
-manager_supabase = create_client(url, key)
 internet_url = "https://smart-waiterless-qr-hotel.streamlit.app/" 
 
 # 1. ⚙️ डेटाबेस (तिजोरी) सेटअप
@@ -312,99 +276,141 @@ if view_mode == "Customer Menu (ग्राहक)":
                 st.rerun()
                 
              st.write("---")             
-             
             # 📌 बटन 1: केवल ऑर्डर को किचन में भेजने के लिए (स्टेटस = 'Ordered')
              if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-                order_data = {
-                    "table_no": str(table_no),
-                    "items": str(order_summary_text),
-                    "total": int(total_bill),
-                    "status": "ordered"
-                }
-            
-                response = supabase.table("orders").insert(order_data).execute()
-            
-                st.success(
-                    f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है!"
-                )
-            
-                st.write("---")
-                
-    
-
-
-
-
-
-
-
-
-
-
-            
-             # if st.button("Please order 👨‍🍳", key="only_order_btn_new"):
-             #     order_data = {
-             #         "table_no": str(table_no),
-             #         "items": str(order_summary_text),
-             #         "total": int(total_bill),
-             #         "status": "ordered"
-             #     }
-             #     try:
-             #        response = supabase.table("orders").insert(order_data).execute()
-             #        st.write(response)
-                
-             #        st.success("🎉 ऑर्डर किचन में भेज दिया गया है!")
-                
-             #    except Exception as e:
-             #        st.error("❌ Order insert failed")
-             #        st.write(str(e))
-                
-
-
-
-
-
-
-
-
+                 order_data = {
+                     "table_no": str(table_no),
+                     "items": str(order_summary_text),
+                     "total": int(total_bill),
+                     "status": "ordered"
+                 }
+                 response = supabase.table("orders").insert(order_data).execute()
+                 if response.data:
+                     order_id = response.data[0]["id"]
+                     st.session_state["current_order_id"] = order_id
 
                  
-                 # response = supabase.table("orders").insert(order_data).execute()
-                 # st.write(response)
-                 # st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
+                 st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
-                 # st.write("---")
+                 st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
+
+            # 📌 बटन 2: Final Bill Payment
+
              if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
-                # Supabase cloud database se 'Paid' status wale orders ko delete karna
-                supabase.table("orders").delete().eq("status", "Paid").execute()
-                HOTEL_UPI_ID = "9238791716@axl" 
-                upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
-                pay_qr = qrcode.make(upi_url)
-                pay_buf = BytesIO()
-                pay_qr.save(pay_buf, format="PNG")
-                st.info(f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{total_bill} है।")
-                st.image(pay_buf.getvalue(), caption="फाइनल पेमेंट क्यूआर कोड", width=250)
-                st.session_state.cart = {}
+                
+                    order_id = st.session_state.get("current_order_id")
+                
+                    if not order_id:
+                        st.error("❌ पहले Order Place करें, फिर Payment करें।")
+                        st.stop()
+                
+                    amount = int(total_bill)
+                
+                    try:
+                        razorpay_order = create_razorpay_order(amount)
+                
+                        st.info(
+                            f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
+                        )
+                
+                        payment_data = {
+                            "key": RAZORPAY_KEY_ID,
+                            "amount": amount * 100,
+                            "currency": "INR",
+                            "name": "Digital Hotel",
+                            "description": f"Table {table_no} Final Bill",
+                            "order_id": razorpay_order["id"]
+                        }
+                
+                        st.components.v1.html(
+                            f"""
+                            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                
+                            <button id="rzp-button"
+                                    style="
+                                    padding:12px 25px;
+                                    font-size:16px;
+                                    border:none;
+                                    border-radius:8px;
+                                    cursor:pointer;">
+                                💳 Pay ₹{amount}
+                            </button>
+                
+                            <script>
+                                var options = {payment_data};
+                
+                                options.handler = function(response) {{
+                                    document.getElementById("payment-result").innerHTML =
+                                        "✅ Payment Successful";
+                                }};
+                
+                                var rzp = new Razorpay(options);
+                
+                                document.getElementById("rzp-button").onclick =
+                                    function(e) {{
+                                        rzp.open();
+                                        e.preventDefault();
+                                    }};
+                            </script>
+                
+                            <div id="payment-result"
+                                 style="margin-top:15px;font-size:18px;">
+                            </div>
+                            """,
+                            height=180
+                        )
+                
+                    except Exception as e:
+                        st.error(f"❌ Razorpay Error: {e}")
+                            
+                        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+       
+
+
+
+
+            
+             # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+             #    # Supabase cloud database se 'Paid' status wale orders ko delete karna
+             #    supabase.table("orders").delete().eq("status", "Paid").execute()
+             #    HOTEL_UPI_ID = "9238791716@axl" 
+             #    upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
+             #    pay_qr = qrcode.make(upi_url)
+             #    pay_buf = BytesIO()
+             #    pay_qr.save(pay_buf, format="PNG")
+             #    st.info(f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{total_bill} है।")
+             #    st.image(pay_buf.getvalue(), caption="फाइनल पेमेंट क्यूआर कोड", width=250)
+             #    st.session_state.cart = {}
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
+    # 🔐 Manager Login Required
     if not manager_login():
         st.stop()
     auto_refresh_kitchen_dashboard()
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
 # 1. Cloud Database (Supabase) se keval 'Ordered' status wale orders nikalna
-    response = manager_supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
-    # response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
+   
+    response = supabase.table("orders").select("*").eq("status", "ordered").order("id", desc=True).execute()
     # st.write(response.data)
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
-    
-    total_response = manager_supabase.table("orders").select("total").eq("status", "Paid").execute()
-    # total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
+    total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
     grand_total = sum(row['total'] for row in total_response.data) if total_response.data else 0
     # --- 💰 मैनेजर के लिए लाइव गल्ला काउंटर ---
     st.write("---")
@@ -444,6 +450,59 @@ else:
         st.rerun()
                 
     st.write("---")
+
+        # 🗑️ PRACTICAL / TEST ORDERS CLEAR BUTTON
+    st.write("---")
+
+    if st.button(
+        "🗑️ Clear All Kitchen Orders",
+        type="secondary",
+        use_container_width=True
+    ):
+        st.session_state.confirm_order_delete = True
+
+    # ⚠️ Delete Confirmation
+    if st.session_state.get("confirm_order_delete", False):
+
+        st.warning(
+            "⚠️ क्या आप सभी current Kitchen Orders delete करना चाहते हैं?"
+        )
+
+        col_delete, col_cancel = st.columns(2)
+
+        with col_delete:
+            if st.button(
+                "हाँ, सभी Orders Delete करें 🗑️",
+                key="delete_all_kitchen_orders",
+                type="primary"
+            ):
+
+                supabase.table("orders").delete().eq(
+                    "status", "ordered"
+                ).execute()
+
+                st.session_state.confirm_order_delete = False
+
+                st.success(
+                    "✅ सभी practical Kitchen Orders delete हो गए!"
+                )
+
+                time.sleep(1)
+                st.rerun()
+
+        with col_cancel:
+            if st.button(
+                "❌ Cancel",
+                key="cancel_delete_orders"
+            ):
+
+                st.session_state.confirm_order_delete = False
+                st.rerun() 
+
+
+
+
+
     
     # एक्टिव ऑर्डर्स को दिखाना
     if not active_orders:
@@ -460,8 +519,6 @@ else:
                 st.write(f"🍛 **ऑर्डर किया गया खाना:** {food_items}")
                 st.subheader(f"💰 संभावित बिल (Unpaid): ₹{bill_amount}")
                 st.caption("नोट: यह राशि पेमेंट होने के बाद ही मुख्य टोटल गल्ले में जुड़ेगी।")
-
-
 
 
 
