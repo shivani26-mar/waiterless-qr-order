@@ -367,12 +367,12 @@ if view_mode == "Customer Menu (ग्राहक)":
                                  style="margin-top:15px;font-size:18px;">
                             </div>
                             """,
-                            height=180
-        )
-
-    except Exception as e:
-        st.error(f"❌ Razorpay Error: {e}")
-
+                                        height=180
+                    )
+            
+                except Exception as e:
+                    st.error(f"❌ Razorpay Error: {e}")
+            
 
 
 
