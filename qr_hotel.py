@@ -318,7 +318,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                             "payment_status": "pending",
                             "razorpay_order_id": razorpay_order["id"]
                          }).execute()
-                                            st.info(
+                        st.info(
                             f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
                         )
                 
