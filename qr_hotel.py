@@ -312,8 +312,13 @@ if view_mode == "Customer Menu (ग्राहक)":
                 
                     try:
                         razorpay_order = create_razorpay_order(amount)
-                
-                        st.info(
+                        supabase_admin.table("payment_records").insert({
+                            "order_id": order_id,
+                            "amount": amount,
+                            "payment_status": "pending",
+                            "razorpay_order_id": razorpay_order["id"]
+                         }).execute()
+                                            st.info(
                             f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
                         )
                 
