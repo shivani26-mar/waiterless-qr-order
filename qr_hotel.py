@@ -101,6 +101,8 @@ url = "https://rrrfxgjapvdefyrblkja.supabase.co"
 key = st.secrets["SUPABASE_KEY"]
 from supabase import create_client
 supabase = create_client(url, key)
+admin_key = st.secrets["SUPABASE_SERVICE_ROLE_KEY"]
+supabase_admin = create_client(url, admin_key)
 internet_url = "https://smart-waiterless-qr-hotel.streamlit.app/" 
 
 # 1. ⚙️ डेटाबेस (तिजोरी) सेटअप
