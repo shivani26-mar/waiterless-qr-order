@@ -94,6 +94,7 @@ import sqlite3
 from io import BytesIO
 import time
 from streamlit import fragment
+table_no = st.query_params.get("table", "1")
 
 # Streamlit Secrets se automatic credentials uthane ke liye 
 url = "https://rrrfxgjapvdefyrblkja.supabase.co"
