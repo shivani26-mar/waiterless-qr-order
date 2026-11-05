@@ -293,7 +293,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                      st.session_state["current_order_id"] = order_id
 
                  
-                 st.success(f"🎉 ऑर्डर टेबल नंबर {selected_table} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
+                 st.success(f"🎉 ऑर्डर टेबल नंबर {table_no} से सीधे किचन में भेज दिया गया है! शेफ आपका खाना तैयार कर रहे हैं।")
     
                  st.write("---")
             
