@@ -299,97 +299,97 @@ if view_mode == "Customer Menu (ग्राहक)":
                  st.write("---")
             
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
-              # 📌 बटन 2: Final Bill Payment
+            # 📌 बटन 2: Final Bill Payment
 
-                if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
-                
-                    order_id = st.session_state.get("current_order_id")
-                
-                    if not order_id:
-                        st.error("❌ पहले Order Place करें, फिर Payment करें।")
-                        st.stop()
-                
-                    amount = int(total_bill)
-                
-                    try:
-                        # 1. Razorpay Order Create
-                        razorpay_order = create_razorpay_order(amount)
-                
-                        # 2. Supabase में Pending Payment Save
-                        supabase_admin.table("payment_records").insert({
-                            "order_id": order_id,
-                            "amount": amount,
-                            "payment_status": "pending",
-                            "razorpay_order_id": razorpay_order["id"]
-                        }).execute()
-                
-                        st.info(
-                            f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
-                        )
-                
-                        # 3. Payment Data
-                        payment_data = {
-                            "key": RAZORPAY_KEY_ID,
-                            "amount": amount * 100,
-                            "currency": "INR",
-                            "name": "Digital Hotel",
-                            "description": f"Table {table_no} Final Bill",
-                            "order_id": razorpay_order["id"]
-                        }
-                
-                        # Python Dictionary को JSON में Convert करना
-                        payment_data_json = json.dumps(payment_data)
-                
-                        # 4. Razorpay Checkout
-                        st.components.v1.html(
-                            f"""
-                            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                
-                            <button id="rzp-button"
-                                style="
-                                padding:12px 25px;
-                                font-size:16px;
-                                border:none;
-                                border-radius:8px;
-                                cursor:pointer;
-                                background-color:#16a34a;
-                                color:white;">
-                                💳 Pay ₹{amount}
-                            </button>
-                
-                            <script>
-                
-                                var options = {payment_data_json};
-                
-                                options.handler = function(response) {{
-                
-                                    document.getElementById("payment-result").innerHTML =
-                                    "⏳ Payment response received. Confirmation pending.";
-                
+            if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+            
+                order_id = st.session_state.get("current_order_id")
+            
+                if not order_id:
+                    st.error("❌ पहले Order Place करें, फिर Payment करें।")
+                    st.stop()
+            
+                amount = int(total_bill)
+            
+                try:
+                    # 1. Razorpay Order Create
+                    razorpay_order = create_razorpay_order(amount)
+            
+                    # 2. Supabase में Pending Payment Save
+                    supabase_admin.table("payment_records").insert({
+                        "order_id": order_id,
+                        "amount": amount,
+                        "payment_status": "pending",
+                        "razorpay_order_id": razorpay_order["id"]
+                    }).execute()
+            
+                    st.info(
+                        f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
+                    )
+            
+                    # 3. Payment Data
+                    payment_data = {
+                        "key": RAZORPAY_KEY_ID,
+                        "amount": amount * 100,
+                        "currency": "INR",
+                        "name": "Digital Hotel",
+                        "description": f"Table {table_no} Final Bill",
+                        "order_id": razorpay_order["id"]
+                    }
+            
+                    # Python Dictionary को JSON में Convert करना
+                    payment_data_json = json.dumps(payment_data)
+            
+                    # 4. Razorpay Checkout
+                    st.components.v1.html(
+                        f"""
+                        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            
+                        <button id="rzp-button"
+                            style="
+                            padding:12px 25px;
+                            font-size:16px;
+                            border:none;
+                            border-radius:8px;
+                            cursor:pointer;
+                            background-color:#16a34a;
+                            color:white;">
+                            💳 Pay ₹{amount}
+                        </button>
+            
+                        <script>
+            
+                            var options = {payment_data_json};
+            
+                            options.handler = function(response) {{
+            
+                                document.getElementById("payment-result").innerHTML =
+                                "⏳ Payment response received. Confirmation pending.";
+            
+                            }};
+            
+                            var rzp = new Razorpay(options);
+            
+                            document.getElementById("rzp-button").onclick =
+                                function(e) {{
+            
+                                    rzp.open();
+                                    e.preventDefault();
+            
                                 }};
-                
-                                var rzp = new Razorpay(options);
-                
-                                document.getElementById("rzp-button").onclick =
-                                    function(e) {{
-                
-                                        rzp.open();
-                                        e.preventDefault();
-                
-                                    }};
-                
-                            </script>
-                
-                            <div id="payment-result"
-                                style="margin-top:15px;font-size:18px;">
-                            </div>
-                            """,
-                            height=180
-                        )
-                
-                    except Exception as e:
-                
-                        st.error(f"❌ Razorpay Error: {e}")
+            
+                        </script>
+            
+                        <div id="payment-result"
+                            style="margin-top:15px;font-size:18px;">
+                        </div>
+                        """,
+                        height=180
+                    )
+            
+                except Exception as e:
+            
+                    st.error(f"❌ Razorpay Error: {e}")
             # 📌 बटन 2: Final Bill Payment
 
              # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
