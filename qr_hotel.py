@@ -301,7 +301,7 @@ if view_mode == "Customer Menu (ग्राहक)":
             # 📌 बटन 2: खाना खाने के बाद पेमेंट करने के लिए (यह स्टेटस को 'Paid' कर देगा)
             # 📌 बटन 2: Final Bill Payment
 
-            if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+             if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
             
                 order_id = st.session_state.get("current_order_id")
             
