@@ -94,6 +94,7 @@ import sqlite3
 from io import BytesIO
 import time
 from streamlit import fragment
+import json
 table_no = st.query_params.get("table", "1")
 
 # Streamlit Secrets se automatic credentials uthane ke liye 
@@ -301,77 +302,77 @@ if view_mode == "Customer Menu (ग्राहक)":
 
             # 📌 बटन 2: Final Bill Payment
 
-             if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
+             # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
                 
-                    order_id = st.session_state.get("current_order_id")
+             #        order_id = st.session_state.get("current_order_id")
                 
-                    if not order_id:
-                        st.error("❌ पहले Order Place करें, फिर Payment करें।")
-                        st.stop()
+             #        if not order_id:
+             #            st.error("❌ पहले Order Place करें, फिर Payment करें।")
+             #            st.stop()
                 
-                    amount = int(total_bill)
+             #        amount = int(total_bill)
                 
-                    try:
-                        razorpay_order = create_razorpay_order(amount)
-                        supabase_admin.table("payment_records").insert({
-                            "order_id": order_id,
-                            "amount": amount,
-                            "payment_status": "pending",
-                            "razorpay_order_id": razorpay_order["id"]
-                         }).execute()
-                        st.info(
-                            f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
-                        )
+             #        try:
+             #            razorpay_order = create_razorpay_order(amount)
+             #            supabase_admin.table("payment_records").insert({
+             #                "order_id": order_id,
+             #                "amount": amount,
+             #                "payment_status": "pending",
+             #                "razorpay_order_id": razorpay_order["id"]
+             #             }).execute()
+             #            st.info(
+             #                f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
+             #            )
                 
-                        payment_data = {
-                            "key": RAZORPAY_KEY_ID,
-                            "amount": amount * 100,
-                            "currency": "INR",
-                            "name": "Digital Hotel",
-                            "description": f"Table {table_no} Final Bill",
-                            "order_id": razorpay_order["id"]
-                        }
+             #            payment_data = {
+             #                "key": RAZORPAY_KEY_ID,
+             #                "amount": amount * 100,
+             #                "currency": "INR",
+             #                "name": "Digital Hotel",
+             #                "description": f"Table {table_no} Final Bill",
+             #                "order_id": razorpay_order["id"]
+             #            }
                 
-                        st.components.v1.html(
-                            f"""
-                            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+             #            st.components.v1.html(
+             #                f"""
+             #                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                 
-                            <button id="rzp-button"
-                                    style="
-                                    padding:12px 25px;
-                                    font-size:16px;
-                                    border:none;
-                                    border-radius:8px;
-                                    cursor:pointer;">
-                                💳 Pay ₹{amount}
-                            </button>
+             #                <button id="rzp-button"
+             #                        style="
+             #                        padding:12px 25px;
+             #                        font-size:16px;
+             #                        border:none;
+             #                        border-radius:8px;
+             #                        cursor:pointer;">
+             #                    💳 Pay ₹{amount}
+             #                </button>
                 
-                            <script>
-                                var options = {payment_data};
+             #                <script>
+             #                    var options = {payment_data};
                 
-                                options.handler = function(response) {{
-                                    document.getElementById("payment-result").innerHTML =
-                                        "✅ Payment Successful";
-                                }};
+             #                    options.handler = function(response) {{
+             #                        document.getElementById("payment-result").innerHTML =
+             #                            "✅ Payment Successful";
+             #                    }};
                 
-                                var rzp = new Razorpay(options);
+             #                    var rzp = new Razorpay(options);
                 
-                                document.getElementById("rzp-button").onclick =
-                                    function(e) {{
-                                        rzp.open();
-                                        e.preventDefault();
-                                    }};
-                            </script>
+             #                    document.getElementById("rzp-button").onclick =
+             #                        function(e) {{
+             #                            rzp.open();
+             #                            e.preventDefault();
+             #                        }};
+             #                </script>
                 
-                            <div id="payment-result"
-                                 style="margin-top:15px;font-size:18px;">
-                            </div>
-                            """,
-                            height=180
-                        )
+             #                <div id="payment-result"
+             #                     style="margin-top:15px;font-size:18px;">
+             #                </div>
+             #                """,
+             #                height=180
+             #            )
                 
-                    except Exception as e:
-                        st.error(f"❌ Razorpay Error: {e}")
+             #        except Exception as e:
+             #            st.error(f"❌ Razorpay Error: {e}")
                             
                         
         
