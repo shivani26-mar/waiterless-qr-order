@@ -509,8 +509,15 @@ else:
     active_orders = response.data if response.data else []
     
     # 2. [AUTO-SUM CONCEPT]: Paid orders ka Total (SUM) nikalne ke liye cloud call
-    total_response = supabase.table("orders").select("total").eq("status", "Paid").execute()
-    grand_total = sum(row['total'] for row in total_response.data) if total_response.data else 0
+    # आज की कुल कमाई daily_sales से प्राप्त करें
+    today_date = time.strftime("%Y-%m-%d")
+    
+    total_response = supabase.table("daily_sales").select("total_amount").eq("sale_date", today_date).execute()
+    
+    grand_total = sum(
+        float(row["total_amount"] or 0)
+        for row in (total_response.data or [])
+    )
     # --- 💰 मैनेजर के लिए लाइव गल्ला काउंटर ---
     st.write("---")
     metric_col1, metric_col2, clear_sales_col = st.columns(3)
