@@ -173,7 +173,20 @@ menu_items = {
 
 # 🛠️ 3. होटल कंट्रोल पैनल (साइडबार)
 st.sidebar.header("⚙️ होटल कंट्रोल पैनल")
-view_mode = st.sidebar.radio("स्क्रीन बदलें:", ["Customer Menu (ग्राहक)", "Kitchen Dashboard (किचन/मैनेजर)"])
+view_mode = st.sidebar.radio(
+    "स्क्रीन बदलें:",
+    [
+        "Customer Menu (ग्राहक)",
+        "Kitchen Dashboard (किचन/मैनेजर)",
+        "Admin Dashboard (Owner)"
+    ]
+)
+
+
+
+
+
+# view_mode = st.sidebar.radio("स्क्रीन बदलें:", ["Customer Menu (ग्राहक)", "Kitchen Dashboard (किचन/मैनेजर)"])
 
 selected_table = st.sidebar.selectbox("QR कोड जनरेट करें:", ["1", "2", "3", "4", "5"])
 network_ip = "10.86.61.100"  # आपका फिक्स असली आईपी एड्रेस
@@ -528,10 +541,7 @@ if view_mode == "Customer Menu (ग्राहक)":
                     st.warning("Receipt nahi mil rahi. Payment status dobara check karein.")
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
-else:
-    # 🔐 Manager Login Required
-    if not manager_login():
-        st.stop()
+elif view_mode == "Kitchen Dashboard (किचन/मैनेजर)":
     auto_refresh_kitchen_dashboard()
     st.title("👨‍🍳 किचन लाइव ऑर्डर डैशबोर्ड")
     
@@ -653,12 +663,62 @@ else:
                 st.write(f"🍛 **ऑर्डर किया गया खाना:** {food_items}")
                 st.subheader(f"💰 संभावित बिल (Unpaid): ₹{bill_amount}")
                 st.caption("नोट: यह राशि पेमेंट होने के बाद ही मुख्य टोटल गल्ले में जुड़ेगी।")
+                
+   
+# --- 📊 स्क्रीन C: Admin Dashboard ---
+else:
+    if not manager_login():
+        st.stop()
+
+    st.title("📊 Restaurant Admin Dashboard")
+        today_date = time.strftime("%Y-%m-%d")
+        month_start = time.strftime("%Y-%m-01")
+
+    # Today's Revenue
+    today_response = supabase.table("daily_sales").select("total_amount").eq("sale_date", today_date).execute()
+
+    today_revenue = sum(
+        float(row.get("total_amount") or 0)
+        for row in (today_response.data or [])
+    )
+
+    # This Month Revenue
+    month_response = supabase.table("daily_sales").select("total_amount").gte("sale_date", month_start).lte("sale_date", today_date).execute()
+
+    month_revenue = sum(
+        float(row.get("total_amount") or 0)
+        for row in (month_response.data or [])
+    )
+
+    col1, col2 = st.columns(2)
+
+        # Total Successful Payments
+    payment_response = supabase.table("payment_records").select("id").eq("payment_status", "captured").execute()
+
+    total_payments = len(payment_response.data or [])
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Today's Revenue", f"₹{today_revenue:,.2f}")
+    col2.metric("This Month Revenue", f"₹{month_revenue:,.2f}")
+    col3.metric("Successful Payments", total_payments)
 
 
+     # Recent Sales Records
+    st.subheader("📅 Recent Sales Records")
 
+    sales_response = (
+        supabase.table("daily_sales")
+        .select("sale_date, total_amount")
+        .order("sale_date", desc=True)
+        .limit(7)
+        .execute()
+    )
 
-
-
+    if sales_response.data:
+        st.dataframe(sales_response.data, use_container_width=True)
+    else:
+        st.info("No sales records available.")
 
 
 
