@@ -693,7 +693,7 @@ else:
     col1, col2 = st.columns(2)
 
         # Total Successful Payments
-    payment_response = supabase.table("payment_records").select("id").eq("payment_status", "captured").execute()
+    payment_response = supabase_admin.table("payment_records").select("id").eq("payment_status", "captured").execute()
 
     total_payments = len(payment_response.data or [])
 
