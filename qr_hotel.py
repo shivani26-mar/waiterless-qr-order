@@ -431,6 +431,101 @@ if view_mode == "Customer Menu (ग्राहक)":
                     
                             except Exception as e:
                                 st.error(f"Payment check error: {e}")
+                                # 📌 Payment Successful hone par Complete Receipt
+                                if st.session_state.get("show_receipt", False):
+                                
+                                    order_id = st.session_state.get("current_order_id")
+                                
+                                    receipt_response = (
+                                        supabase_admin.table("payment_records")
+                                        .select("*")
+                                        .eq("order_id", order_id)
+                                        .eq("payment_status", "captured")
+                                        .order("created_at", desc=True)
+                                        .limit(1)
+                                        .execute()
+                                    )
+                                
+                                    if receipt_response.data:
+                                
+                                        receipt = receipt_response.data[0]
+                                
+                                        st.success("🎉 Payment Successful!")
+                                
+                                        st.title("🙏 Thank You for Visiting Shreeji Restaurant!")
+                                        st.write(
+                                            "Have a wonderful time ahead, please visit again. ❤️"
+                                        )
+                                
+                                        st.markdown("---")
+                                        st.header("🧾 YOUR FINAL BILL")
+                                
+                                        st.subheader("🍽️ Shreeji Restaurant")
+                                
+                                        st.write(f"**Table Number:** {receipt.get('table_no', '')}")
+                                        st.write(f"**Order ID:** {receipt.get('order_id', '')}")
+                                        st.write(f"**Payment ID:** {receipt.get('payment_id', '')}")
+                                        st.write(f"**Date & Time:** {receipt.get('created_at', '')}")
+                                
+                                        st.markdown("### Food Details")
+                                
+                                        st.text(receipt.get("items", ""))
+                                
+                                        st.markdown("---")
+                                
+                                        st.subheader(f"Total Amount: ₹{receipt.get('amount', 0)}")
+                                
+                                        st.success("PAYMENT STATUS: PAID ✅")
+                                
+                                        # Print Bill Button
+                                        print_items = html.escape(str(receipt.get("items", "")))
+                                        print_table = html.escape(str(receipt.get("table_no", "")))
+                                        print_order = html.escape(str(receipt.get("order_id", "")))
+                                        print_payment = html.escape(str(receipt.get("payment_id", "")))
+                                        print_date = html.escape(str(receipt.get("created_at", "")))
+                                        print_amount = receipt.get("amount", 0)
+                                
+                                        st.components.v1.html(
+                                            f"""
+                                            <button onclick="window.print()"
+                                            style="padding:12px 25px;background:#16a34a;
+                                            color:white;border:0;border-radius:8px;font-size:16px;">
+                                            🖨️ Print Bill
+                                            </button>
+                                
+                                            <div id="bill" style="display:none;">
+                                                <h2>Shreeji Restaurant</h2>
+                                                <h3>FINAL BILL</h3>
+                                                <p>Table Number: {print_table}</p>
+                                                <p>Order ID: {print_order}</p>
+                                                <p>Payment ID: {print_payment}</p>
+                                                <p>Date: {print_date}</p>
+                                                <pre>{print_items}</pre>
+                                                <h3>Total: ₹{print_amount}</h3>
+                                                <h3>PAID</h3>
+                                                <p>Thank you for visiting us!</p>
+                                            </div>
+                                
+                                            <style>
+                                            @media print {{
+                                                body * {{ visibility: hidden; }}
+                                                #bill, #bill * {{ visibility: visible; }}
+                                                #bill {{ display:block; position:absolute; top:0; left:0; }}
+                                            }}
+                                            </style>
+                                            """,
+                                            height=55
+                                        )
+                                
+                                        # Exit Button
+                                        if st.button("Exit 🚪", key="receipt_exit"):
+                                            st.session_state["show_receipt"] = False
+                                            st.session_state["current_order_id"] = None
+                                            st.session_state.cart = {}
+                                            st.rerun()
+                                
+                                    else:
+                                        st.warning("Receipt nahi mil rahi. Payment status dobara check karein.")
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
