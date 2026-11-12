@@ -740,7 +740,7 @@ else:
         st.info("No data available for sales chart.")
 
 
-
+    #📅 Add Monthly Revenue Chart
     st.subheader("📅 Monthly Revenue Chart")
 
     monthly_response = (
@@ -759,6 +759,23 @@ else:
     
         monthly_sales[month] = monthly_sales.get(month, 0) + amount
 
+     if monthly_sales:
+        monthly_chart_data = {
+            "Month": list(sorted(monthly_sales.keys())),
+            "Revenue": [monthly_sales[m] for m in sorted(monthly_sales.keys())]
+        }
+
+        st.line_chart(monthly_chart_data, x="Month", y="Revenue")
+     else:
+        st.info("No monthly sales data available.")
+        
+
+
+
+
+
+
+    
        # Top Selling Food Items
     st.subheader("🍕 Top Selling Food Items")
 
