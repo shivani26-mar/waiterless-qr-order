@@ -739,7 +739,67 @@ else:
     else:
         st.info("No data available for sales chart.")    
 
+       # Top Selling Food Items
+    st.subheader("🍕 Top Selling Food Items")
 
+    food_response = (
+        supabase_admin.table("payment_records")
+        .select("items")
+        .eq("payment_status", "captured")
+        .execute()
+    )
+
+    food_sales = {}
+
+    for record in (food_response.data or []):
+        items_text = record.get("items") or ""
+
+        for line in items_text.splitlines():
+            parts = line.split("|")
+
+            if len(parts) == 4:
+                try:
+                    food_name = parts[0].strip()
+                    quantity = int(parts[1].split(":", 1)[1].strip())
+                    revenue = float(parts[3].split("₹")[-1].strip())
+
+                    if food_name not in food_sales:
+                        food_sales[food_name] = {
+                            "Quantity": 0,
+                            "Revenue": 0
+                        }
+
+                    food_sales[food_name]["Quantity"] += quantity
+                    food_sales[food_name]["Revenue"] += revenue
+
+                except (ValueError, IndexError):
+                    continue
+
+    if food_sales:
+        sorted_food = sorted(
+            food_sales.items(),
+            key=lambda x: x[1]["Quantity"],
+            reverse=True
+        )
+
+        st.bar_chart({
+            name: details["Quantity"]
+            for name, details in sorted_food
+        })
+
+        st.dataframe(
+            [
+                {
+                    "Food Item": name,
+                    "Quantity Sold": details["Quantity"],
+                    "Revenue": f"₹{details['Revenue']:,.2f}"
+                }
+                for name, details in sorted_food
+            ],
+            use_container_width=True
+        )
+    else:
+        st.info("No food sales available yet.")
 
 
 
