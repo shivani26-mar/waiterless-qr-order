@@ -720,6 +720,25 @@ else:
     else:
         st.info("No sales records available.")
 
+    
+   # Daily Sales Chart
+    st.subheader("📈 Daily Revenue Chart")
+
+    if sales_response.data:
+        chart_data = {
+            "Date": [
+                row["sale_date"] for row in sales_response.data
+            ],
+            "Revenue": [
+                float(row.get("total_amount") or 0)
+                for row in sales_response.data
+            ]
+        }
+
+        st.bar_chart(chart_data, x="Date", y="Revenue")
+    else:
+        st.info("No data available for sales chart.")    
+
 
 
 
