@@ -671,8 +671,8 @@ else:
         st.stop()
 
     st.title("📊 Restaurant Admin Dashboard")
-     today_date = time.strftime("%Y-%m-%d")
-     month_start = time.strftime("%Y-%m-01")
+    today_date = time.strftime("%Y-%m-%d")
+    month_start = time.strftime("%Y-%m-01")
 
     # Today's Revenue
     today_response = supabase.table("daily_sales").select("total_amount").eq("sale_date", today_date).execute()
