@@ -737,7 +737,27 @@ else:
 
         st.bar_chart(chart_data, x="Date", y="Revenue")
     else:
-        st.info("No data available for sales chart.")    
+        st.info("No data available for sales chart.")
+
+
+
+    st.subheader("📅 Monthly Revenue Chart")
+
+    monthly_response = (
+        supabase.table("daily_sales")
+        .select("sale_date, total_amount")
+        .order("sale_date", desc=True)
+        .limit(365)
+        .execute()
+    )
+    
+    monthly_sales = {}
+    
+    for row in (monthly_response.data or []):
+        month = str(row["sale_date"])[:7]
+        amount = float(row.get("total_amount") or 0)
+    
+        monthly_sales[month] = monthly_sales.get(month, 0) + amount
 
        # Top Selling Food Items
     st.subheader("🍕 Top Selling Food Items")
@@ -800,6 +820,11 @@ else:
         )
     else:
         st.info("No food sales available yet.")
+
+
+
+
+
 
 
 
