@@ -320,8 +320,16 @@ if view_mode == "Customer Menu (ग्राहक)":
                         "order_id": order_id,
                         "amount": amount,
                         "payment_status": "pending",
-                        "razorpay_order_id": razorpay_order["id"]
+                        "razorpay_order_id": razorpay_order["id"],
+                        "table_no": str(table_no),
+                        "items": str(order_summary_text)
                     }).execute()
+                    # supabase_admin.table("payment_records").insert({
+                    #     "order_id": order_id,
+                    #     "amount": amount,
+                    #     "payment_status": "pending",
+                    #     "razorpay_order_id": razorpay_order["id"]
+                    # }).execute()
             
                     st.info(
                         f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
@@ -390,109 +398,6 @@ if view_mode == "Customer Menu (ग्राहक)":
                 except Exception as e:
             
                     st.error(f"❌ Razorpay Error: {e}")
-            # 📌 बटन 2: Final Bill Payment
-
-             # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
-                
-             #        order_id = st.session_state.get("current_order_id")
-                
-             #        if not order_id:
-             #            st.error("❌ पहले Order Place करें, फिर Payment करें।")
-             #            st.stop()
-                
-             #        amount = int(total_bill)
-                
-             #        try:
-             #            razorpay_order = create_razorpay_order(amount)
-             #            supabase_admin.table("payment_records").insert({
-             #                "order_id": order_id,
-             #                "amount": amount,
-             #                "payment_status": "pending",
-             #                "razorpay_order_id": razorpay_order["id"]
-             #             }).execute()
-             #            st.info(
-             #                f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{amount} है।"
-             #            )
-                
-             #            payment_data = {
-             #                "key": RAZORPAY_KEY_ID,
-             #                "amount": amount * 100,
-             #                "currency": "INR",
-             #                "name": "Digital Hotel",
-             #                "description": f"Table {table_no} Final Bill",
-             #                "order_id": razorpay_order["id"]
-             #            }
-                
-             #            st.components.v1.html(
-             #                f"""
-             #                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                
-             #                <button id="rzp-button"
-             #                        style="
-             #                        padding:12px 25px;
-             #                        font-size:16px;
-             #                        border:none;
-             #                        border-radius:8px;
-             #                        cursor:pointer;">
-             #                    💳 Pay ₹{amount}
-             #                </button>
-                
-             #                <script>
-             #                    var options = {payment_data};
-                
-             #                    options.handler = function(response) {{
-             #                        document.getElementById("payment-result").innerHTML =
-             #                            "✅ Payment Successful";
-             #                    }};
-                
-             #                    var rzp = new Razorpay(options);
-                
-             #                    document.getElementById("rzp-button").onclick =
-             #                        function(e) {{
-             #                            rzp.open();
-             #                            e.preventDefault();
-             #                        }};
-             #                </script>
-                
-             #                <div id="payment-result"
-             #                     style="margin-top:15px;font-size:18px;">
-             #                </div>
-             #                """,
-             #                height=180
-             #            )
-                
-             #        except Exception as e:
-             #            st.error(f"❌ Razorpay Error: {e}")
-                            
-                        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-       
-
-
-
-
-            
-             # if st.button("Proceed to Pay (Final Bill) 💳", key="final_pay_btn"):
-             #    # Supabase cloud database se 'Paid' status wale orders ko delete karna
-             #    supabase.table("orders").delete().eq("status", "Paid").execute()
-             #    HOTEL_UPI_ID = "9238791716@axl" 
-             #    upi_url = f"upi://pay?pa={HOTEL_UPI_ID}&pn=Digital_Hotel&am={total_bill}&cu=INR"
-             #    pay_qr = qrcode.make(upi_url)
-             #    pay_buf = BytesIO()
-             #    pay_qr.save(pay_buf, format="PNG")
-             #    st.info(f"टेबल नंबर {table_no} का कुल फाइनल बिल ₹{total_bill} है।")
-             #    st.image(pay_buf.getvalue(), caption="फाइनल पेमेंट क्यूआर कोड", width=250)
-             #    st.session_state.cart = {}
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
@@ -604,11 +509,6 @@ else:
 
                 st.session_state.confirm_order_delete = False
                 st.rerun() 
-
-
-
-
-
     
     # एक्टिव ऑर्डर्स को दिखाना
     if not active_orders:
