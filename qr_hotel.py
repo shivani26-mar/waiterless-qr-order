@@ -95,6 +95,7 @@ from io import BytesIO
 import time
 from streamlit import fragment
 import json
+import html
 table_no = st.query_params.get("table", "1")
 
 # Streamlit Secrets se automatic credentials uthane ke liye 
@@ -269,7 +270,8 @@ if view_mode == "Customer Menu (ग्राहक)":
              cost = price * qty
              total_bill += cost
              st.write(f"**{item}** x {qty} = ₹{cost}")
-             order_summary_text += f"{item}({qty}), "
+             order_summary_text += f"{item} | Quantity: {qty} | Price: ₹{price} each | Total: ₹{cost}\n"
+
 
             
              st.write("---")
@@ -398,6 +400,37 @@ if view_mode == "Customer Menu (ग्राहक)":
                 except Exception as e:
             
                     st.error(f"❌ Razorpay Error: {e}")
+                    # 📌 Payment Status Check
+                    if st.button("Check Payment Status 🔍", key="check_payment_status"):
+                    
+                        order_id = st.session_state.get("current_order_id")
+                    
+                        if not order_id:
+                            st.warning("Pehle order place karein.")
+                        else:
+                            try:
+                                response = (
+                                    supabase_admin.table("payment_records")
+                                    .select("*")
+                                    .eq("order_id", order_id)
+                                    .order("created_at", desc=True)
+                                    .limit(1)
+                                    .execute()
+                                )
+                    
+                                if response.data:
+                                    payment = response.data[0]
+                    
+                                    if payment["payment_status"] == "captured":
+                                        st.session_state["show_receipt"] = True
+                                        st.success("Payment Successful! 🎉")
+                                    else:
+                                        st.info("Payment abhi confirm nahi hua hai. Thodi der baad check karein.")
+                                else:
+                                    st.warning("Payment record nahi mila.")
+                    
+                            except Exception as e:
+                                st.error(f"Payment check error: {e}")
 
 # --- 🚀 स्क्रीन B: किचन/मैनेजर लाइव डैशबोर्ड ---
 else:
