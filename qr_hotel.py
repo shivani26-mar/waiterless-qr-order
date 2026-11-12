@@ -759,14 +759,14 @@ else:
     
         monthly_sales[month] = monthly_sales.get(month, 0) + amount
 
-     if monthly_sales:
+    if monthly_sales:
         monthly_chart_data = {
             "Month": list(sorted(monthly_sales.keys())),
             "Revenue": [monthly_sales[m] for m in sorted(monthly_sales.keys())]
         }
 
         st.line_chart(monthly_chart_data, x="Month", y="Revenue")
-     else:
+    else:
         st.info("No monthly sales data available.")
         
 
