@@ -96,6 +96,8 @@ import time
 from streamlit import fragment
 import json
 import html
+import csv
+import io
 table_no = st.query_params.get("table", "1")
 
 # Streamlit Secrets se automatic credentials uthane ke liye 
@@ -857,8 +859,30 @@ else:
     else:
         st.info("No payment transactions available.")
     
-    
+# add  transaction_response    
+    if transaction_response.data:
+    csv_buffer = io.StringIO()
 
+    writer = csv.DictWriter(
+        csv_buffer,
+        fieldnames=[
+            "created_at",
+            "order_id",
+            "table_no",
+            "amount",
+            "payment_status"
+        ]
+    )
+
+    writer.writeheader()
+    writer.writerows(transaction_response.data)
+
+    st.download_button(
+        label="📥 Download Payment Report",
+        data=csv_buffer.getvalue(),
+        file_name="payment_report.csv",
+        mime="text/csv"
+    )
 
 
 
