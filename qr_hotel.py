@@ -838,24 +838,24 @@ else:
     else:
         st.info("No food sales available yet.")
 
+#  Recent Payment Transaction
+    st.subheader("💳 Recent Payment Transactions")
 
-        st.subheader("💳 Recent Payment Transactions")
+    transaction_response = (
+        supabase_admin.table("payment_records")
+        .select("created_at, order_id, table_no, amount, payment_status")
+        .order("created_at", desc=True)
+        .limit(10)
+        .execute()
+    )
 
-        transaction_response = (
-            supabase_admin.table("payment_records")
-            .select("created_at, order_id, table_no, amount, payment_status")
-            .order("created_at", desc=True)
-            .limit(10)
-            .execute()
+    if transaction_response.data:
+        st.dataframe(
+            transaction_response.data,
+            use_container_width=True
         )
-    
-        if transaction_response.data:
-            st.dataframe(
-                transaction_response.data,
-                use_container_width=True
-            )
-        else:
-            st.info("No payment transactions available.")
+    else:
+        st.info("No payment transactions available.")
     
     
 
