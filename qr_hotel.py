@@ -861,7 +861,7 @@ else:
     
 # add  transaction_response    
     if transaction_response.data:
-      csv_buffer = io.StringIO()
+        csv_buffer = io.StringIO()
 
         writer = csv.DictWriter(
             csv_buffer,
@@ -874,15 +874,15 @@ else:
             ]
         )
 
-    writer.writeheader()
-    writer.writerows(transaction_response.data)
-
-    st.download_button(
-        label="📥 Download Payment Report",
-        data=csv_buffer.getvalue(),
-        file_name="payment_report.csv",
-        mime="text/csv"
-    )
+        writer.writeheader()
+        writer.writerows(transaction_response.data)
+    
+        st.download_button(
+            label="📥 Download Payment Report",
+            data=csv_buffer.getvalue(),
+            file_name="payment_report.csv",
+            mime="text/csv"
+        )
 
 
 
