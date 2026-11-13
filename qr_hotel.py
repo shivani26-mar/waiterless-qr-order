@@ -282,11 +282,11 @@ if view_mode == "Customer Menu (ग्राहक)":
                          else:
                              price = info["price"]
         
-             cost = price * qty
-             total_bill += cost
-             st.write(f"**{item}** x {qty} = ₹{cost}")
-             order_summary_text += f"{item} | Quantity: {qty} | Price: ₹{price} each | Total: ₹{cost}\n"
-
+                 cost = price * qty
+                 total_bill += cost
+                 st.write(f"**{item}** x {qty} = ₹{cost}")
+                 order_summary_text += f"{item} | Quantity: {qty} | Price: ₹{price} each | Total: ₹{cost}\n"
+    
 
             
              st.write("---")
